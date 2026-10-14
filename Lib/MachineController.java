@@ -2,6 +2,7 @@ package Lib;
 
 import java.time.Clock;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -11,6 +12,8 @@ import java.util.List;
  * นาฬิกาขวาบนกับเวลาเสร็จโดยประมาณใช้ now ตัวเดียวกัน
  */
 public class MachineController {
+    private static final DateTimeFormatter FINISH_CLOCK = DateTimeFormatter.ofPattern("HH:mm");
+
     private final List<WashingMachine> machines;
     private final LogService logService;
     private final List<MachineListener> listeners;
@@ -44,7 +47,7 @@ public class MachineController {
         WashingMachine machine = requireMachine(machineId);
         machine.startWash(roomNo, mode, now);
         log("START_WASH", machineId + " room=" + roomNo + " mode=" + mode.name()
-                + " finish=" + machine.getExpectedFinish());
+                + " finish=" + machine.getExpectedFinish().format(FINISH_CLOCK));
         fireStatus(machine);
     }
 
@@ -53,6 +56,16 @@ public class MachineController {
         machine.collect();
         log("COLLECT", machineId);
         fireStatus(machine);
+    }
+
+    /** เทสบนจอ: ข้ามไปวินาทีสุดท้ายของสถานะปัจจุบัน ไม่ได้นอนรอ 15 หรือ 70 นาที */
+    public void skipToExpireForTest(String machineId) throws InvalidOperationException {
+        WashingMachine machine = requireMachine(machineId);
+        if (machine.getStatus() == MachineStatus.AVAILABLE) {
+            throw new InvalidOperationException(machineId + " ว่าง ไม่มีเวลาให้ข้าม");
+        }
+        machine.skipToLastSecondForTest();
+        fireTick(machine);
     }
 
     public List<WashingMachine> getMachines() {

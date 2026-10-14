@@ -2,6 +2,7 @@ package testapp.Lib;
 
 import java.time.Clock;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -11,6 +12,8 @@ import java.util.List;
  * นาฬิกาขวาบนกับเวลาเสร็จโดยประมาณใช้ now ตัวเดียวกัน
  */
 public class MachineController {
+    private static final DateTimeFormatter FINISH_CLOCK = DateTimeFormatter.ofPattern("HH:mm");
+
     private final List<WashingMachine> machines;
     private final LogService logService;
     private final List<MachineListener> listeners;
@@ -44,7 +47,7 @@ public class MachineController {
         WashingMachine machine = requireMachine(machineId);
         machine.startWash(roomNo, mode, now);
         log("START_WASH", machineId + " room=" + roomNo + " mode=" + mode.name()
-                + " finish=" + machine.getExpectedFinish());
+                + " finish=" + machine.getExpectedFinish().format(FINISH_CLOCK));
         fireStatus(machine);
     }
 
