@@ -1,7 +1,7 @@
-package GUI;
+package testapp.GUI;
 
-import Lib.FileLogService;
-import Lib.MachineController;
+import testapp.Lib.FileLogService;
+import testapp.Lib.MachineController;
 
 import javax.swing.*;
 import java.awt.*;
