@@ -1,7 +1,7 @@
-package testapp.GUI;
+package GUI;
 
-import testapp.Lib.FileLogService;
-import testapp.Lib.MachineController;
+import Lib.FileLogService;
+import Lib.MachineController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -65,24 +65,47 @@ public class LoginView extends JFrame {
         return root;
     }
 
-    static JLabel badge(String text, Color fg, Color bg) {
+    static JLabel badge(final String text, final Color fg, final Color bg) {
         JLabel chip = new JLabel(text) {
+            Dimension pillSize() {
+                FontMetrics fm = getFontMetrics(getFont());
+                return new Dimension(fm.stringWidth(text) + 40, fm.getHeight() + 12);
+            }
+
+            @Override
+            public Dimension getPreferredSize() {
+                return pillSize();
+            }
+
+            @Override
+            public Dimension getMinimumSize() {
+                return pillSize();
+            }
+
+            @Override
+            public Dimension getMaximumSize() {
+                return pillSize();
+            }
+
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
                 g2.setColor(bg);
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), getHeight(), getHeight());
+                g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, getHeight(), getHeight());
+                g2.setColor(fg);
+                g2.setFont(getFont());
+                FontMetrics fm = g2.getFontMetrics();
+                int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+                g2.drawString(text, 18, y);
                 g2.dispose();
-                super.paintComponent(g);
             }
         };
         chip.setFont(uiFont(Font.BOLD, 16));
         chip.setForeground(fg);
-        chip.setBorder(BorderFactory.createEmptyBorder(8, 16, 8, 16));
+        chip.setOpaque(false);
         chip.setAlignmentX(Component.LEFT_ALIGNMENT);
-        Dimension pref = chip.getPreferredSize();
-        chip.setMaximumSize(new Dimension(pref.width, pref.height));
         return chip;
     }
 
