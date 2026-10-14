@@ -13,6 +13,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.JTextComponent;
 
 public class LoginView extends JFrame {
 
@@ -232,6 +237,38 @@ public class LoginView extends JFrame {
         }
     }
 
+    static void digitsOnly(JTextComponent field, final int max) {
+        ((AbstractDocument) field.getDocument()).setDocumentFilter(new DocumentFilter() {
+            public void insertString(FilterBypass fb, int offset, String text, AttributeSet attr)
+                    throws BadLocationException {
+                replace(fb, offset, 0, text, attr);
+            }
+
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
+                    throws BadLocationException {
+                if (text == null || text.isEmpty()) {
+                    super.replace(fb, offset, length, text, attrs);
+                    return;
+                }
+                StringBuilder digits = new StringBuilder();
+                for (int i = 0; i < text.length(); i++) {
+                    char c = text.charAt(i);
+                    if (c >= '0' && c <= '9') {
+                        digits.append(c);
+                    }
+                }
+                int roomLeft = max - (fb.getDocument().getLength() - length);
+                if (roomLeft <= 0 || digits.length() == 0) {
+                    return;
+                }
+                if (digits.length() > roomLeft) {
+                    digits.setLength(roomLeft);
+                }
+                super.replace(fb, offset, length, digits.toString(), attrs);
+            }
+        });
+    }
+
     static final String PIN_FILE = "room_pin.txt";
 
     JTextField roomnumLog = new JTextField();
@@ -293,6 +330,8 @@ public class LoginView extends JFrame {
         ));
         pinLog.setAlignmentX(Component.LEFT_ALIGNMENT);
         pinLog.setMaximumSize(new Dimension(Integer.MAX_VALUE, 58));
+        digitsOnly(roomnumLog, 4);
+        digitsOnly(pinLog, 4);
 
         errorLog.setFont(uiFont(Font.PLAIN, 13));
         errorLog.setForeground(RED);
@@ -348,6 +387,10 @@ public class LoginView extends JFrame {
         String pin = new String(pinLog.getPassword()).trim();
         if (room.isEmpty()) {
             errorLog.setText("กรอกเลขห้องก่อน");
+            return;
+        }
+        if (!room.matches("\\d{1,4}")) {
+            errorLog.setText("เลขห้องต้องเป็นตัวเลขไม่เกิน 4 หลัก");
             return;
         }
         if (!pin.matches("\\d{4}")) {
