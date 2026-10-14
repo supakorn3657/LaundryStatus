@@ -128,6 +128,14 @@ public class WashingMachine extends Machine {
         checkRep();
     }
 
+    /** ใช้ตอนเดโมหรือเทส ไม่ต้องรอจนครบนาทีจริง เหลือ 1 วินาทีแล้วปล่อยให้ tick ปกติเปลี่ยนสถานะ */
+    public void skipToLastSecondForTest() {
+        if (getStatus() == MachineStatus.AVAILABLE || timeRemaining <= 1) {
+            return;
+        }
+        timeRemaining = 1;
+    }
+
     private void checkRep() {
         if (timeRemaining < 0) {
             throw new RuntimeException("timeRemaining ห้ามติดลบ");
